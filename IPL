@@ -1,0 +1,110 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+
+# Load the IPL dataset
+df = pd.read_csv('ipl_data.csv')
+
+# Check the first few rows of the dataset
+print(df.head())
+
+# Aggregate data to calculate wins and losses for each team over the seasons
+team_performance = df.groupby(['season', 'team']).agg(
+    wins=('match_winner', 'size'),
+    total_matches=('team1', 'size')  # Assuming 'team1' and 'team2' columns indicate the teams
+)
+
+team_performance['win_percentage'] = (team_performance['wins'] / team_performance['total_matches']) * 100
+
+# Show the performance of each team over the seasons
+print(team_performance.reset_index())
+
+# Visualize the win percentage of each team over seasons
+plt.figure(figsize=(12, 6))
+sns.lineplot(data=team_performance.reset_index(), x='season', y='win_percentage', hue='team')
+plt.title('Team Performance: Win Percentage Over Seasons')
+plt.xlabel('Season')
+plt.ylabel('Win Percentage')
+plt.legend(title='Team')
+plt.show()
+
+# Assume 'player_stats.csv' contains individual player statistics
+player_df = pd.read_csv('player_stats.csv')
+
+# Get the batting average and bowling strike rate for each player
+# Batting average = runs scored / number of innings (for simplicity, here it's just a placeholder column)
+# Bowling strike rate = balls bowled / wickets taken (again, placeholder)
+
+player_df['batting_average'] = player_df['runs'] / player_df['innings']
+player_df['bowling_strike_rate'] = player_df['balls_bowled'] / player_df['wickets_taken']
+
+# Display summary statistics for players
+print(player_df[['player_name', 'batting_average', 'bowling_strike_rate']].describe())
+
+# Visualize the distribution of batting averages
+plt.figure(figsize=(10, 6))
+sns.histplot(player_df['batting_average'], kde=True, bins=20)
+plt.title('Distribution of Batting Averages')
+plt.xlabel('Batting Average')
+plt.ylabel('Frequency')
+plt.show()
+
+# Visualize the distribution of bowling strike rates
+plt.figure(figsize=(10, 6))
+sns.histplot(player_df['bowling_strike_rate'], kde=True, bins=20)
+plt.title('Distribution of Bowling Strike Rates')
+plt.xlabel('Bowling Strike Rate')
+plt.ylabel('Frequency')
+plt.show()
+
+# Analyze the effect of home advantage (assuming 'home' column contains True/False for home matches)
+home_advantage = df.groupby(['home', 'match_winner']).size().unstack().fillna(0)
+home_advantage['home_win_percentage'] = (home_advantage[True] / home_advantage.sum(axis=1)) * 100
+
+# Display home win percentages
+print(home_advantage)
+
+# Analyze toss wins and match outcomes (assuming 'toss_winner' and 'match_winner' columns exist)
+toss_vs_match_win = df.groupby(['toss_winner', 'match_winner']).size().unstack().fillna(0)
+
+# Visualize the trend of toss wins vs match wins
+plt.figure(figsize=(10, 6))
+sns.heatmap(toss_vs_match_win, annot=True, cmap='Blues')
+plt.title('Toss Winner vs Match Winner')
+plt.xlabel('Match Winner')
+plt.ylabel('Toss Winner')
+plt.show()
+
+# Histogram for number of runs in matches (assuming 'runs' column exists)
+plt.figure(figsize=(10, 6))
+sns.histplot(df['runs'], kde=True, bins=30)
+plt.title('Distribution of Runs in Matches')
+plt.xlabel('Runs')
+plt.ylabel('Frequency')
+plt.show()
+
+# Scatter plot for comparing runs scored and wickets taken in a match (if applicable)
+plt.figure(figsize=(10, 6))
+sns.scatterplot(x=df['runs'], y=df['wickets_taken'])
+plt.title('Runs Scored vs Wickets Taken')
+plt.xlabel('Runs Scored')
+plt.ylabel('Wickets Taken')
+plt.show()
+
+# Box plot for analyzing the distribution of runs by team (assuming 'team' column exists)
+plt.figure(figsize=(12, 6))
+sns.boxplot(data=df, x='team', y='runs')
+plt.title('Distribution of Runs by Team')
+plt.xlabel('Team')
+plt.ylabel('Runs')
+plt.xticks(rotation=90)
+plt.show()
+
+# Calculate correlations between numerical columns (e.g., 'runs', 'wickets_taken', etc.)
+correlation_matrix = df.corr()
+
+# Plot heatmap of correlations
+plt.figure(figsize=(10, 6))
+sns.heatmap(correlation_matrix, annot=True, cmap='coolwarm', fmt='.2f')
+plt.title('Correlation Heatmap')
+plt.show()
